@@ -51,7 +51,7 @@ Recognized for innovation with **2nd Place** at **Hack Beyond Limit** (Rathinam 
 
 ### 👨‍🎓 Personal Learning Tool
 - **Technology**: Custom AI algorithms
-- **Capabilities**: Creates personalized learning paths, quizzes, and assessments
+- **Capabilities**: Creates personalized learning with the content and check our capacity of content observation.
 - **Benefits**: Adapts to individual learning pace and knowledge level
 
 ![Personal Learning Tool](images/personal_edu_tool.png)
