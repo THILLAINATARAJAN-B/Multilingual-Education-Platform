@@ -92,7 +92,7 @@ Recognized for innovation with **2nd Place** at **Hack Beyond Limit** (Rathinam 
 git clone https: https://github.com/THILLAINATARAJAN-B/Multilingual-Education-Platform
 
 # Navigate to project directory
-cd opentrack
+cd Multilingual-Education-Platform
 
 # Install dependencies
 pip install -r requirements.txt
