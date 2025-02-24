@@ -1,13 +1,15 @@
-# Education Platform
+# Multilingual Education Platform
 
 **Hack Beyond Limit - 2nd Place Winner**  
 *Rathinam College of Arts and Science, Coimbatore*
 
 ## Overview
-This Education Platform is designed to revolutionize how students and educators interact with content, offering cutting-edge tools to enhance learning experiences. The platform integrates a series of intelligent features that utilize state-of-the-art technologies like YOLO, OCR, RAG (Retrieval-Augmented Generation), BART, Mixtral-8x, and GroQ, making it a one-stop solution for converting video to PDF, summarizing and questioning content, generating notes, and more.
+The **Multilingual Education Platform** is designed to revolutionize how students and educators interact with content. This innovative platform provides a suite of advanced tools that leverage state-of-the-art technologies like YOLO, OCR, RAG (Retrieval-Augmented Generation), BART, Mixtral-8x, and GroQ. It is a one-stop solution for converting video to PDF, summarizing and questioning content, generating notes, and much more—catered to multilingual content support.
 
-The platform was recognized for its innovation by securing 2nd place at **Hack Beyond Limit** conducted at Rathinam College of Arts and Science, Coimbatore.
-
+This platform was recognized for its innovation by securing **2nd place** at **Hack Beyond Limit**, hosted at Rathinam College of Arts and Science, Coimbatore.
+##Main Interface
+     ![Interface](images/interface_1.png)  
+     ![Interface extended(images/interface_extended.png)
 ## Key Features
 
 ### 1. **Video to PDF Conversion (YOLO to OCR to PDF)**
@@ -49,11 +51,17 @@ The platform was recognized for its innovation by securing 2nd place at **Hack B
    - **Output**: Notes in Tamil
    - Similar to the English note generation feature, this tool uses **Mixtral-8x7B-32768** and **GroQ** for efficient note generation in Tamil, making the platform highly useful for Tamil-speaking users.
 
+### 7. **Personal Learning Tool**
+   - **Input**: Personalized User Data, Content, and Learning Goals
+   - **Output**: Custom learning paths, quizzes, and assessments based on the user’s progress
+   - The **Personal Learning Tool** provides students with personalized learning experiences by dynamically generating customized learning paths. It integrates quizzes, assessments, and course materials tailored to the user’s knowledge level and learning pace.
+   - **Example Output**:  
+     ![Personal Learning Tool](images/personal_edu_tool.png)  
 
 ## Achievements
 
 - **Hack Beyond Limit 2025** - **2nd Place**  
-  The team secured 2nd place at **Hack Beyond Limit**, a prestigious hackathon hosted at Rathinam College of Arts and Science, Coimbatore, for developing this innovative education platform.
+  The team secured **2nd place** at **Hack Beyond Limit**, a prestigious hackathon hosted at Rathinam College of Arts and Science, Coimbatore, for developing this innovative education platform.
 
 ## Team Members
 
@@ -107,10 +115,3 @@ We welcome contributions from the community! To contribute:
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-```
-
-### Key Changes:
-1. Added image placeholders like `![Image Description](images/image_name.png)` where you can show screenshots of the platform's output or interface.
-2. You will need to upload the corresponding images to the `images/` folder in your repository (e.g., `video_to_pdf_example.png`, `rag_summary_example.png`, etc.).
-
-Feel free to update the file paths and image names if needed. Let me know if there's anything else you'd like to adjust!
