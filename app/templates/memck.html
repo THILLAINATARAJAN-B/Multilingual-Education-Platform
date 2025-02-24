@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Comparison Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4CAF50;
+            --error-color: #f44336;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 800px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .text-display {
+            background: #f8f9fa;
+            padding: 0.8rem;
+            border-radius: var(--border-radius);
+            min-height: 80px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+        }
+
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center text-primary mb-3">Text Comparison Tool</h2>
+        
+        <div class="card">
+            <h5>1. Upload PDF</h5>
+            <input type="file" id="pdfFile" accept=".pdf" class="form-control mb-2">
+            <button class="btn btn-primary w-100" onclick="uploadPDF()">Upload and Extract</button>
+            <div id="pdfText" class="text-display mt-2"></div>
+        </div>
+
+        <div class="card">
+            <h5>2. Voice Recording</h5>
+            <select id="audioDevices" class="form-control mb-2">
+                <option value="">Select Audio Input Device</option>
+            </select>
+            <div class="d-flex gap-2">
+                <button id="startRecord" class="btn btn-primary flex-grow-1" disabled>Start</button>
+                <button id="stopRecord" class="btn btn-danger flex-grow-1" disabled>Stop</button>
+                <button id="refreshDevices" class="btn btn-secondary">↻</button>
+            </div>
+            <div id="recordingStatus" class="mt-2 text-danger text-center"></div>
+            <div id="voiceText" class="text-display mt-2"></div>
+        </div>
+
+        <div class="card">
+            <h5>3. Comparison Results</h5>
+            <button class="btn btn-primary w-100 mb-3" onclick="compareTexts()" id="compareButton" disabled>Compare</button>
+            <div id="comparisonResults">
+                <div id="grade" class="text-success"></div>
+                <div id="similarity" class="text-success"></div>
+                <div id="missingWords" class="text-danger"></div>
+                <div id="extraWords" class="text-danger"></div>
+                <div id="wordCountDiff" class="text-success"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioContext;
+        let audioChunks = [];
+        let selectedDevice = null;
+
+        // Initialize audio devices
+        async function initializeAudio() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const audioDevices = devices.filter(device => device.kind === 'audioinput');
+                const deviceSelect = document.getElementById('audioDevices');
+                
+                deviceSelect.innerHTML = '<option value="">Select Audio Input Device</option>';
+                
+                audioDevices.forEach(device => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || `Microphone ${deviceSelect.length + 1}`;
+                    deviceSelect.appendChild(option);
+                });
+
+                document.getElementById('startRecord').disabled = !deviceSelect.value;
+            } catch (error) {
+                console.error('Error initializing audio:', error);
+                alert('Error accessing audio devices: ' + error.message);
+            }
+        }
+
+        document.getElementById('audioDevices').addEventListener('change', function(e) {
+            selectedDevice = e.target.value;
+            document.getElementById('startRecord').disabled = !selectedDevice;
+        });
+
+        document.getElementById('refreshDevices').addEventListener('click', initializeAudio);
+
+        window.addEventListener('load', async () => {
+            try {
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+                await initializeAudio();
+            } catch (error) {
+                console.error('Error requesting microphone permission:', error);
+                alert('Error accessing microphone: ' + error.message);
+            }
+        });
+
+        async function uploadPDF() {
+            const fileInput = document.getElementById('pdfFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a PDF file first');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('pdf', file);
+
+            try {
+                const response = await fetch('/memck/upload_pdf', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('pdfText').textContent = data.text;
+                    updateCompareButtonState();
+                } else {
+                    alert(data.error || 'Error processing PDF');
+                }
+            } catch (error) {
+                alert('Error uploading PDF: ' + error);
+            }
+        }
+
+        document.getElementById('startRecord').addEventListener('click', async () => {
+            try {
+                const constraints = {
+                    audio: {
+                        deviceId: selectedDevice ? { exact: selectedDevice } : undefined
+                    }
+                };
+
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                audioContext = new AudioContext();
+                const sourceNode = audioContext.createMediaStreamSource(stream);
+                const processorNode = audioContext.createScriptProcessor(4096, 1, 1);
+                audioChunks = [];
+
+                processorNode.onaudioprocess = (e) => {
+                    const audioData = e.inputBuffer.getChannelData(0);
+                    audioChunks.push(new Float32Array(audioData));
+                };
+
+                sourceNode.connect(processorNode);
+                processorNode.connect(audioContext.destination);
+
+                document.getElementById('startRecord').disabled = true;
+                document.getElementById('stopRecord').disabled = false;
+                document.getElementById('recordingStatus').textContent = 'Recording...';
+
+                window.recordingNodes = {
+                    sourceNode,
+                    processorNode,
+                    stream
+                };
+            } catch (error) {
+                alert('Error accessing microphone: ' + error);
+            }
+        });
+
+        document.getElementById('stopRecord').addEventListener('click', async () => {
+            if (window.recordingNodes) {
+                const { sourceNode, processorNode, stream } = window.recordingNodes;
+                
+                stream.getTracks().forEach(track => track.stop());
+                sourceNode.disconnect();
+                processorNode.disconnect();
+                
+                const concatenatedData = new Float32Array(audioChunks.reduce((acc, chunk) => acc + chunk.length, 0));
+                let offset = 0;
+                audioChunks.forEach(chunk => {
+                    concatenatedData.set(chunk, offset);
+                    offset += chunk.length;
+                });
+
+                const blob = new Blob([concatenatedData.buffer], { type: 'audio/wav' });
+                const reader = new FileReader();
+                reader.onloadend = async () => {
+                    try {
+                        const response = await fetch('/memck/process_audio', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                audio: reader.result
+                            })
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            document.getElementById('voiceText').textContent = data.text;
+                            updateCompareButtonState();
+                        } else {
+                            alert(data.error || 'Error processing audio');
+                        }
+                        document.getElementById('recordingStatus').textContent = '';
+                    } catch (error) {
+                        alert('Error processing audio: ' + error);
+                        document.getElementById('recordingStatus').textContent = '';
+                    }
+                };
+                reader.readAsDataURL(blob);
+
+                document.getElementById('startRecord').disabled = false;
+                document.getElementById('stopRecord').disabled = true;
+                document.getElementById('recordingStatus').textContent = 'Processing...';
+                
+                window.recordingNodes = null;
+                audioChunks = [];
+                if (audioContext) {
+                    await audioContext.close();
+                    audioContext = null;
+                }
+            }
+        });
+
+        function updateCompareButtonState() {
+            const pdfText = document.getElementById('pdfText').textContent;
+            const voiceText = document.getElementById('voiceText').textContent;
+            document.getElementById('compareButton').disabled = !(pdfText && voiceText);
+        }
+
+        async function compareTexts() {
+            const pdfText = document.getElementById('pdfText').textContent;
+            const voiceText = document.getElementById('voiceText').textContent;
+
+            try {
+                const response = await fetch('/memck/compare_texts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        pdf_text: pdfText,
+                        audio_text: voiceText
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    const results = data.results;
+                    displayResults(results);
+                } else {
+                    alert(data.error || 'Error comparing texts');
+                }
+            } catch (error) {
+                alert('Error during comparison: ' + error);
+            }
+        }
+
+        function displayResults(results) {
+            const gradeDiv = document.getElementById('grade');
+            const similarityDiv = document.getElementById('similarity');
+            const missingWordsDiv = document.getElementById('missingWords');
+            const extraWordsDiv = document.getElementById('extraWords');
+            const wordCountDiffDiv = document.getElementById('wordCountDiff');
+
+            // Display grade with appropriate color
+            gradeDiv.innerHTML = `<h3>Grade: ${results.grade}</h3>`;
+            
+            // Display similarity percentage
+            similarityDiv.innerHTML = `<p>Similarity: ${results.similarity_percentage}%</p>`;
+            
+            // Display missing words
+            if (results.missing_words.length > 0) {
+                missingWordsDiv.innerHTML = `
+                    <h4>Missing Words:</h4>
+                    <p>${results.missing_words.join(', ')}</p>`;
+            } else {
+                missingWordsDiv.innerHTML = '<p>No missing words!</p>';
+            }
+            
+            // Display extra words
+            if (results.extra_words.length > 0) {
+                extraWordsDiv.innerHTML = `
+                    <h4>Extra Words:</h4>
+                    <p>${results.extra_words.join(', ')}</p>`;
+            } else {
+                extraWordsDiv.innerHTML = '<p>No extra words!</p>';
+            }
+            
+            // Display word count difference
+            wordCountDiffDiv.innerHTML = `
+                <p>Word Count Difference: ${results.word_count_difference} words</p>`;
+        }
+
+        // Handle visibility change to stop recording when page is hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && window.recordingNodes) {
+                document.getElementById('stopRecord').click();
+            }
+        });
+    </script>
+</body>
+</html>

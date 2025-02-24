@@ -1,0 +1,20 @@
+**Title: 0.86**
+
+**Tech Stack Overview**
+
+The tech stack consists of the following components:
+
+* **Text Extraction**: OCR Engine using tools like Tesseract, Google Cloud Vision API, or OCR to extract text and images from various sources.
+* **Storage Solutions**: MongoDB or Firebase for managing data, generating content, and storing educational materials.
+* **Video Processing**: Tools for processing video content, including summaries and explanations.
+* **Translation and Text-to-Speech**:
+	+ Google Translate or OpenNMT for multilingual translation.
+	+ Text-to-Speech (TTS) APIs like Google Cloud TTS or Amazon Polly for voice explanations.
+
+**AI Models, Backend, and Frontend**
+
+* **AI Models**: GPT-based models (e.g., LLaMA2, RAG, BERT) for summarization, translation, Q&A, generation, and personalized learning outputs.
+* **Backend**: Python frameworks (Flask/Django) with TensorFlow/PyTorch for AI integration.
+* **Frontend**: ReactJS for an intuitive, user-friendly interface.
+
+This tech stack is designed to support a comprehensive educational platform with features like text extraction, translation, video processing, and personalized learning outputs.

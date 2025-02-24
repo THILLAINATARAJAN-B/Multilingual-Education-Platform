@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DocumentAI - Intelligent Document Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success-color: #059669;
+            --danger-color: #dc2626;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background-color: var(--card-bg);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .container-wrapper {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 24px;
+        }
+
+        .card {
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 2rem;
+            border: none;
+            background-color: var(--card-bg);
+        }
+
+        .card-header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 16px 16px 0 0 !important;
+        }
+
+        .card-header h3 {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .btn-custom {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-custom:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+            color: white;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .input-group {
+            gap: 0.5rem;
+        }
+
+        #answer-container {
+            border-radius: 12px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+
+        .loading-spinner {
+            width: 1.25rem;
+            height: 1.25rem;
+            border-width: 0.15em;
+            margin-left: 0.5rem;
+        }
+
+        .section-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.25rem;
+            font-size: 1.25rem;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+            padding: 1rem;
+        }
+
+        .alert-danger {
+            background-color: #fef2f2;
+            color: var(--danger-color);
+        }
+
+        .alert-success {
+            background-color: #ecfdf5;
+            color: var(--success-color);
+        }
+
+        .file-upload-wrapper {
+            background-color: #f8fafc;
+            border: 2px dashed #e2e8f0;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .answer-content {
+            padding: 1.5rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 768px) {
+            .container-wrapper {
+                padding: 0 16px;
+                margin: 1rem auto;
+            }
+            
+            .card-header {
+                padding: 1.25rem;
+            }
+            
+            .card-body {
+                padding: 1.25rem;
+            }
+            
+            .btn-custom {
+                width: 100%;
+                margin-top: 0.5rem;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container-wrapper">
+            <span class="navbar-brand">Content Generator</span>
+        </div>
+    </nav>
+
+    <div class="container-wrapper">
+        <div class="card">
+            <div class="card-header">
+                <h3>Intelligent Document Analysis</h3>
+            </div>
+            
+            <div class="card-body">
+                <!-- Upload Section -->
+                <div class="upload-section mb-4">
+                    <h5 class="section-title">Upload Documents</h5>
+                    <div class="alert alert-danger" id="upload-error" style="display: none;"></div>
+                    <div class="alert alert-success" id="upload-success" style="display: none;"></div>
+                    
+                    <form id="upload-form">
+                        <div class="file-upload-wrapper mb-3">
+                            <input type="file" class="form-control" name="files[]" multiple accept=".pdf" id="file-input">
+                            <small class="form-text text-muted d-block mt-2">Upload PDF files (max 10MB per file)</small>
+                        </div>
+                        <button type="button" class="btn btn-custom" id="upload-btn">
+                            <span class="button-text">Process Documents</span>
+                            <span class="spinner-border spinner-border-sm loading-spinner" role="status" style="display: none;"></span>
+                        </button>
+                    </form>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- QA Section -->
+                <div class="qa-section">
+                    <h5 class="section-title">Ask Questions About Your Documents</h5>
+                    <div class="alert alert-danger" id="qa-error" style="display: none;"></div>
+                    
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="What would you like to know about your documents?" id="question-input">
+                        <button class="btn btn-custom" type="button" id="ask-btn">
+                            <span class="button-text">Ask Question</span>
+                            <span class="spinner-border spinner-border-sm loading-spinner" role="status" style="display: none;"></span>
+                        </button>
+                    </div>
+                    
+                    <div id="answer-container" class="card" style="display: none;">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-3 text-muted">Answer</h6>
+                            <div class="answer-content" id="answer-text"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Handle file upload
+            $('#upload-btn').click(function() {
+                const $btn = $(this);
+                const files = $('#file-input')[0].files;
+                
+                if (files.length === 0) {
+                    showError('Please select at least one PDF file', '#upload-error');
+                    return;
+                }
+
+                toggleLoading($btn, true);
+                clearAlerts();
+
+                const formData = new FormData();
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('files[]', files[i]);
+                }
+
+                $.ajax({
+                    url: '/rag/upload',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            $('#upload-success').html(`
+                                <strong>Success!</strong> ${response.message}
+                                <div class="mt-2">Processed ${files.length} file(s)</div>
+                            `).show();
+                        } else {
+                            showError(response.error || 'Unknown error occurred', '#upload-error');
+                        }
+                    },
+                    error: function(xhr) {
+                        const error = xhr.responseJSON?.error || 'Server error occurred';
+                        showError(error, '#upload-error');
+                    },
+                    complete: function() {
+                        toggleLoading($btn, false);
+                        $('#file-input').val('');
+                    }
+                });
+            });
+
+            // Handle question asking
+            $('#ask-btn').click(function() {
+                const $btn = $(this);
+                const question = $('#question-input').val().trim();
+                
+                if (!question) {
+                    showError('Please enter a question', '#qa-error');
+                    return;
+                }
+
+                toggleLoading($btn, true);
+                clearAlerts();
+                $('#answer-container').hide();
+
+                $.ajax({
+                    url: '/rag/ask',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ question: question }),
+                    success: function(response) {
+                        if (response.success) {
+                            $('#answer-text').html(response.answer.replace(/\n/g, '<br>'));
+                            $('#answer-container').show();
+                        } else {
+                            showError(response.error || 'Failed to get answer', '#qa-error');
+                        }
+                    },
+                    error: function(xhr) {
+                        const error = xhr.responseJSON?.error || 'Server error occurred';
+                        showError(error, '#qa-error');
+                    },
+                    complete: function() {
+                        toggleLoading($btn, false);
+                    }
+                });
+            });
+
+            function toggleLoading($element, isLoading) {
+                $element.prop('disabled', isLoading);
+                $element.find('.button-text').toggle(!isLoading);
+                $element.find('.loading-spinner').toggle(isLoading);
+            }
+
+            function showError(message, selector) {
+                $(selector).html(`
+                    <strong>Error:</strong> ${message}
+                    <button type="button" class="btn-close float-end" data-bs-dismiss="alert"></button>
+                `).show();
+            }
+
+            function clearAlerts() {
+                $('.alert').hide();
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

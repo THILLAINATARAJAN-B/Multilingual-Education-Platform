@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamil RAG System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f6f9;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .upload-section, .question-section {
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .upload-zone {
+            border: 2px dashed #007bff;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+        .upload-zone:hover {
+            background: #e9f5ff;
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 6px;
+        }
+        .response-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .success {
+            background-color: #e6ffe6;
+            color: #006600;
+        }
+        .error {
+            background-color: #ffe6e6;
+            color: #cc0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2 class="text-primary">தமிழ் RAG அமைப்பு</h2>
+            <p class="text-muted">PDF பதிவேற்றம் மற்றும் கேள்வி-பதில் அமைப்பு</p>
+        </div>
+
+        <div class="upload-section">
+            <h4>📂 PDF பதிவேற்றம்</h4>
+            <div class="upload-zone" onclick="document.getElementById('pdfUpload').click();">
+                <p>Drag & Drop or Click to Upload PDF</p>
+            </div>
+            <input type="file" id="pdfUpload" accept=".pdf" multiple class="d-none">
+            <div id="fileList" class="mt-2"></div>
+            <button class="btn btn-primary mt-3" onclick="uploadFiles()">📤 பதிவேற்று</button>
+        </div>
+
+        <div class="question-section">
+            <h4>❓ கேள்வி கேளுங்கள்</h4>
+            <input type="text" id="questionInput" class="form-control" placeholder="உங்கள் கேள்வியை இங்கே தட்டச்சு செய்யவும்...">
+            <button class="btn btn-primary mt-3" onclick="askQuestion()">🔍 கேள்வி கேள்</button>
+        </div>
+
+        <div id="loadingSpinner" class="text-center text-primary mt-3" style="display: none;">⏳ பதில் பெறுகிறது...</div>
+        <div id="response" class="response-box"></div>
+    </div>
+
+    <script>
+        function uploadFiles() {
+            const fileInput = document.getElementById('pdfUpload');
+            const files = fileInput.files;
+            if (files.length === 0) {
+                showResponse('PDF கோப்புகளை தேர்ந்தெடுக்கவும்', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            for (let file of files) {
+                formData.append('files[]', file);
+            }
+
+            document.getElementById('loadingSpinner').style.display = 'block';
+            
+            fetch('/rag_tamil/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showResponse(data.success, 'success');
+                } else {
+                    showResponse(data.error, 'error');
+                }
+            })
+            .catch(() => {
+                showResponse('பதிவேற்றும் போது பிழை ஏற்பட்டது', 'error');
+            })
+            .finally(() => {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            });
+        }
+
+        function askQuestion() {
+            const question = document.getElementById('questionInput').value.trim();
+            if (!question) {
+                showResponse('கேள்வியை உள்ளிடவும்', 'error');
+                return;
+            }
+
+            document.getElementById('loadingSpinner').style.display = 'block';
+
+            fetch('/rag_tamil/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.answer) {
+                    showResponse(data.answer, 'success');
+                } else {
+                    showResponse(data.error, 'error');
+                }
+            })
+            .catch(() => {
+                showResponse('கேள்வி கேட்கும் போது பிழை ஏற்பட்டது', 'error');
+            })
+            .finally(() => {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            });
+        }
+
+        function showResponse(message, type) {
+            const responseDiv = document.getElementById('response');
+            responseDiv.textContent = message;
+            responseDiv.className = `response-box ${type}`;
+        }
+
+        document.getElementById('pdfUpload').addEventListener('change', function() {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            for (let file of this.files) {
+                fileList.innerHTML += `<div>📄 ${file.name}</div>`;
+            }
+        });
+    </script>
+</body>
+</html>

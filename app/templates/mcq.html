@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF MCQ Generator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">PDF MCQ Generator</h1>
+        
+        <!-- Input Form -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <form id="mcqForm" class="space-y-4">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <input 
+                        type="file" 
+                        name="file" 
+                        id="pdfFile" 
+                        accept=".pdf" 
+                        class="hidden"
+                        required
+                    >
+                    <label 
+                        for="pdfFile" 
+                        class="cursor-pointer flex flex-col items-center space-y-2"
+                    >
+                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <span class="text-gray-600">Click to upload PDF or drag and drop</span>
+                    </label>
+                    <p id="selectedFile" class="mt-2 text-sm text-gray-500"></p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Language</label>
+                        <select name="language" class="w-full p-2 border rounded-md">
+                            <option value="english" selected>English</option>
+                            <option value="tamil">Tamil</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
+                        <select name="difficulty" class="w-full p-2 border rounded-md">
+                            <option value="Easy">Easy</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="Hard">Hard</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Number of Questions</label>
+                        <input 
+                            type="number" 
+                            name="num_questions" 
+                            min="1" 
+                            max="10" 
+                            value="5" 
+                            class="w-full p-2 border rounded-md"
+                        >
+                    </div>
+                </div>
+                
+                <button 
+                    type="submit" 
+                    class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
+                >
+                    Generate MCQs
+                </button>
+            </form>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loading" class="hidden text-center py-8">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p class="mt-4 text-gray-600">Processing PDF and generating questions...</p>
+        </div>
+        
+        <!-- Results Section -->
+        <div id="results" class="hidden space-y-6">
+            <h2 class="text-2xl font-semibold mb-4">Generated Questions</h2>
+            <div id="questionsList" class="space-y-6"></div>
+        </div>
+    </div>
+
+    <script>
+        // File upload handling
+        const fileInput = document.getElementById('pdfFile');
+        const selectedFile = document.getElementById('selectedFile');
+        const dropZone = document.querySelector('.border-dashed');
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile.textContent = `Selected: ${file.name}`;
+            } else {
+                selectedFile.textContent = '';
+            }
+        });
+
+        // Form submission
+        document.getElementById('mcqForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Show loading state
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('results').classList.add('hidden');
+            
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch('/mcq/generate', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Hide loading state
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('results').classList.remove('hidden');
+                    
+                    // Display questions
+                    const questionsList = document.getElementById('questionsList');
+                    questionsList.innerHTML = '';
+                    
+                    data.questions.forEach((q, index) => {
+                        const questionEl = document.createElement('div');
+                        questionEl.className = 'bg-white rounded-lg shadow-md p-6';
+                        
+                        questionEl.innerHTML = `
+                            <div class="space-y-4">
+                                <p class="font-semibold">${q.question}</p>
+                                <div class="space-y-2">
+                                    ${q.options.map((opt, i) => `
+                                        <div class="flex items-center space-x-2">
+                                            <input 
+                                                type="radio" 
+                                                name="question${index}" 
+                                                value="${String.fromCharCode(65 + i)}"
+                                                id="q${index}opt${i}"
+                                            >
+                                            <label for="q${index}opt${i}">${opt}</label>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <button 
+                                    onclick="showAnswer(this, '${q.correct}', '${q.explanation}')"
+                                    class="mt-4 bg-green-600 text-white py-1 px-4 rounded-md hover:bg-green-700 transition duration-200"
+                                >
+                                    Show Answer
+                                </button>
+                                <div class="answer-reveal hidden mt-4 p-4 bg-gray-50 rounded-md">
+                                        <p class="font-semibold text-green-600">Correct Answer: ${q.correct}</p>
+                                    <p class="mt-2">${q.explanation}</p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        questionsList.appendChild(questionEl);
+                    });
+                } else {
+                    alert(data.error || 'Failed to generate questions');
+                    document.getElementById('loading').classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+                document.getElementById('loading').classList.add('hidden');
+            }
+        });
+
+        function showAnswer(button, correct, explanation) {
+            const answerDiv = button.nextElementSibling;
+            answerDiv.classList.toggle('hidden');
+            button.textContent = answerDiv.classList.contains('hidden') ? 'Show Answer' : 'Hide Answer';
+        }
+
+        // Drag and drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('border-blue-500', 'bg-blue-50');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                fileInput.files = files;
+                selectedFile.textContent = `Selected: ${files[0].name}`;
+            } else {
+                alert('Please upload a PDF file');
+            }
+        }
+    </script>
+</body>
+</html>
