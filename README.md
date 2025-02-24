@@ -71,11 +71,11 @@ The platform was recognized for its innovation by securing 2nd place at **Hack B
 ### Steps
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-organization/education-platform.git
+   git clone https://github.com/THILLAINATARAJAN-B/opentrack.git
    ```
 2. Navigate to the project directory:
    ```bash
-   cd education-platform
+   cd opentrack
    ```
 3. Install the required dependencies:
    ```bash
@@ -83,7 +83,7 @@ The platform was recognized for its innovation by securing 2nd place at **Hack B
    ```
 4. Run the platform:
    ```bash
-   python main.py
+   python run.py
    ```
 
 ## Contribution
