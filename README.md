@@ -20,26 +20,35 @@ The platform was recognized for its innovation by securing 2nd place at **Hack B
    - **Output**: A concise summary
    - The **RAG (Retrieval-Augmented Generation)** model intelligently summarizes content by retrieving relevant information from large datasets and generating a precise, high-quality summary.
    - The platform allows users to ask **questions** about the summarized content, receiving accurate responses based on the context.
+   - **Example Output**:  
+     ![RAG Summary](images/rag.png)
 
 ### 3. **MCQ Generation**
    - **Input**: PDF Document
    - **Output**: Customizable number of MCQs (Multiple Choice Questions)
    - Using the **BART model**, the platform automatically generates MCQs based on the content of an input PDF. Users can specify how many questions they need, making this tool ideal for teachers preparing exams or quizzes.
+   - **Example Output**:  
+     ![MCQ Generation](images/mcq_gen.png)
 
 ### 4. **Notes Generation (English)**
    - **Input**: PDF Document
    - **Output**: Notes in English
    - Powered by **Mixtral-8x** and **B-32768**, this feature generates detailed, coherent notes in English from any input PDF. Ideal for students who need concise, digestible information from long-form content.
+   - **Example Output**:  
+     ![Notes Generation English](images/notes_gen.png)
 
 ### 5. **RAG for Tamil Content and Doubt Questioning**
    - **Input**: Tamil PDF Document
    - **Output**: Summarized content and answers in Tamil
    - This feature leverages **RAG** to summarize content in Tamil and allows users to ask doubts in Tamil. The system answers queries in Tamil, ensuring users receive localized and relevant responses.
+   - **Example Output**:  
+     ![Tamil RAG](images/tamil_rag.png)
 
 ### 6. **Notes Generation (Tamil)**
    - **Input**: Tamil PDF Document
    - **Output**: Notes in Tamil
    - Similar to the English note generation feature, this tool uses **Mixtral-8x7B-32768** and **GroQ** for efficient note generation in Tamil, making the platform highly useful for Tamil-speaking users.
+
 
 ## Achievements
 
@@ -99,3 +108,9 @@ We welcome contributions from the community! To contribute:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 ```
+
+### Key Changes:
+1. Added image placeholders like `![Image Description](images/image_name.png)` where you can show screenshots of the platform's output or interface.
+2. You will need to upload the corresponding images to the `images/` folder in your repository (e.g., `video_to_pdf_example.png`, `rag_summary_example.png`, etc.).
+
+Feel free to update the file paths and image names if needed. Let me know if there's anything else you'd like to adjust!
