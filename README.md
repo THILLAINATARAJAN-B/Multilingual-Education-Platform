@@ -117,7 +117,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
--We would also like to extend our deepest appreciation to our mentors and professors at Rathinam College of Arts and Science and Anna University RC Campus for their guidance, encouragement, and continuous support.
+- We would also like to extend our deepest appreciation to our mentors and professors at Rathinam College of Arts and Science and Anna University RC Campus for their guidance, encouragement, and continuous support.
 - We would like to express our sincere gratitude to our team members of Edu Horizon for their dedication and hard work in bringing this project to life.
 - A special thank you to all contributors for their valuable input and support throughout the development process.
 
