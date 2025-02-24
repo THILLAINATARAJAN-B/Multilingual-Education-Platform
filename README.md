@@ -89,7 +89,7 @@ Recognized for innovation with **2nd Place** at **Hack Beyond Limit** (Rathinam 
 
 ```bash
 # Clone the repository
-git clone https://github.com/THILLAINATARAJAN-B/opentrack.git
+git clone https: https://github.com/THILLAINATARAJAN-B/Multilingual-Education-Platform
 
 # Navigate to project directory
 cd opentrack
